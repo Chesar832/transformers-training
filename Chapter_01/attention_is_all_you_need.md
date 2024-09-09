@@ -5,7 +5,7 @@ These are challenging questions to test the understanding of the "Attention Is A
 
 ### **Why did the authors move away from RNNs and CNNs, and how does the attention mechanism address the limitations of those models?**
 - The authors move away from RNNs and CNNs mainly because those models had a limitation of large contexts (they use text to illustrate the point), therefore when those models were applied in scenarios such as translation they saw an opportunity to improve the state-of-the-art models.
-- Another reason was the non-parallelizable flow of the state-of-the-art models because they had sequential hidden states where function h(t) in the moment t depends on the previous state h_(t-1). This parallelizable nature of the sequential models becomes a challenge when large size batches or long sequences need to be processed for one of these models.
+- Another reason was the non-parallelizable flow of the state-of-the-art models because they had sequential hidden states where function $h_{t}$ in the moment t depends on the previous state $h_{t-1}$. This parallelizable nature of the sequential models becomes a challenge when large size batches or long sequences need to be processed for one of these models.
 
 
 ### Explain in detail how the self-attention mechanism works in the Transformer. How does it compute the attention scores, and how are those scores used in the model?
