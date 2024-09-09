@@ -10,6 +10,7 @@ These are challenging questions to test the understanding of the "Attention Is A
 
 2. **Explain in detail how the self-attention mechanism works in the Transformer. How does it compute the attention scores, and how are those scores used in the model?**
 In the following image we see the Transfomer architecture. But, for now we focus on the red and lightblue boxes where the first one contains the self-attention mechanism (embedded within the Multi-Head attention) and the previous steps from the raw input to the positional encoding.
+
 ![img](../img/self_attention_01.jpg)
 
 So, I'm going to explain the self-attention mechanism considering all the process since the input (red box in previous image) to a better understanding but I'm going to divide in two sections to separate the input process and the self-attention machanism.
