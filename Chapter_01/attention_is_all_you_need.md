@@ -7,6 +7,7 @@ These are challenging questions to test the understanding of the "Attention Is A
 - The authors move away from RNNs and CNNs mainly because those models had a limitation of large contexts (they use text to illustrate the point), therefore when those models were applied in scenarios such as translation they saw an opportunity to improve the state-of-the-art models.
 - Another reason was the non-parallelizable flow of the state-of-the-art models because they had sequential hidden states where function $h_{t}$ in the moment t depends on the previous state $h_{t-1}$. This parallelizable nature of the sequential models becomes a challenge when large size batches or long sequences need to be processed for one of these models.
 
+---
 
 ### Explain in detail how the self-attention mechanism works in the Transformer. How does it compute the attention scores, and how are those scores used in the model?
 In the following image we see the Transfomer architecture. But, for now we focus on the red and lightblue boxes where the first one contains the self-attention mechanism (embedded within the Multi-Head attention) and the previous steps from the raw input to the positional encoding.
@@ -32,11 +33,34 @@ So, I'm going to explain the self-attention mechanism considering all the proces
     ![img](../img/self_attention_03.jpg)
 
 * **Positional Encoding**
-    Some stuff
+    Since the transformer doesn't use covolutions or states to capture the order of the sequential data, its way to capture the order is through positional encoding.
+    So, now we have our word embedding and an additional vector for each token, just like this:
 
-1. In the Transformer architecture, self-attention mechanisms internally uses three key components which are the query (Q), key (K) and value (V). These components are the same matrix at the input to the self-attention mechanism and this matrix is the result of 
-So, Q and K are used to compute the Attention filter (a matrix of nxm) which begins with almost random values but as long as it is trained its weights capture the most relevant parts of the sequence. Then, the Attention filter is combined with V 
+    ![img](../img/self_attention_04.jpg)
 
+    Now, the transformer will apply two formulas to each value considering the position of the token. For example, te first token or word has a position = 0 and the second token has a position = 1.  
+      
+    * $PE_{(pos, 2i)} = \sin\left( \frac{pos}{10000^{\frac{2i}{d}}} \right)$
+    * $PE_{(pos, 2i+1)} = \cos\left( \frac{pos}{10000^{\frac{2i}{d}}} \right)$
+
+    > Zero dimension, and the following pair dimensions use $sine()$ and the unpair dimensions use the $cosine()$ formula.
+
+    These formulas are implemented in this way for the first token, by example:
+
+    ![img](../img/self_attention_05.jpg)
+
+    Finally, the embedding vector and the positional encoding vector are added into just one vector which pass to the *Self-attention mechanism*.
+
+    ![img](../img/self_attention_06.jpg)
+
+    > Little note: In some posts the position beggins with a 0 index but others use a position of 1, so the paper does not mention which one specifically use but there are those two options. I think that the the performance with any of them woul be very very similar, by the way.
+
+* ***Self-Attention Mechanism:***
+    `pass`
+
+> For this detailed explanation I use this awesome resource: [Transfomer architecture](https://www.youtube.com/watch?v=mMa2PmYJlCo&t=322s&ab_channel=HeduAIbyBatoolHaider)
+
+---
 
 ### What is the purpose of the multi-head attention mechanism, and why is it more effective than using a single attention head? Can you describe the intuition behind it?
 
