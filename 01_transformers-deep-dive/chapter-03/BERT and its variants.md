@@ -522,30 +522,72 @@ BERT’s maximum input length is typically **512 tokens**, limited by its **posi
 
 ---
 
-#### RoBERTa's Training Improvements
+#### BERT vs RoBERTa
 
-RoBERTa modified BERT's pre-training approach by removing NSP and training on longer sequences with larger batch sizes. Analyze how each of these changes contributes to performance gains. What does this suggest about the importance of training configurations?
+| Feature                   | BERT                                                | RoBERTa                                             |
+|---------------------------|------------------------------------------------------|-----------------------------------------------------|
+| **Pre-training Objectives** | Uses **MLM** and **NSP**                              | Focuses only on **MLM** and introduces **dynamic masking** |
+| **Training Data**         | Trained on BookCorpus and Wikipedia (3.3B words)     | Trained on a **10x larger dataset**, including CommonCrawl News and OpenWebText |
+| **Input Representations** | **WordPiece embeddings** with 30,000-token vocabulary| **Byte Pair Encoding (BPE)** with up to 50,000 tokens  |
+| **Batch Size**            | Smaller batch sizes, less computation                | Larger batch sizes, more computation               |
+| **Dynamic Masking**       | **Static masking** during training                   | **Dynamic masking** that changes across epochs      |
 
----
-
-#### ALBERT's Parameter Reduction
-
-ALBERT reduces the number of parameters through cross-layer parameter sharing and factorized embedding parameterization. Explain how these techniques work and evaluate their impact on model scalability and performance.
-
----
-
-#### DistilBERT and Knowledge Distillation
-
-Discuss the process of knowledge distillation as applied in DistilBERT. How does DistilBERT achieve a balance between model size reduction and performance retention? Analyze the trade-offs involved in distillation.
+RoBERTa’s improvements result in enhanced performance across benchmarks but require more computational resources compared to BERT.
 
 ---
 
-#### Adapters for Parameter-efficient Fine-tuning
+#### BERT vs ALBERT
 
-Explain how adapter modules can be integrated into BERT for parameter-efficient fine-tuning. Compare this approach to full model fine-tuning in terms of computational efficiency and performance on low-resource tasks.
+| Feature                     | BERT                                                | ALBERT                                               |
+|-----------------------------|------------------------------------------------------|-----------------------------------------------------|
+| **Model Size and Parameters** | BERT-base has 12 layers with 768 hidden units per layer, totaling approximately 110 million parameters. | ALBERT uses parameter reduction techniques, resulting in fewer parameters—about 18 times fewer than BERT-large—while maintaining competitive performance. |
+| **Embedding Factorization**   | Uses a single large embedding matrix, tying the size of hidden layers to the vocabulary embedding size. | Implements **factorized embedding parameterization**, decomposing the embedding matrix to allow for larger hidden sizes without significantly increasing the number of parameters. |
+| **Cross-Layer Parameter Sharing** | Each layer has its own unique parameters. | Employs **cross-layer parameter sharing**, where parameters are shared across layers to reduce the overall parameter count and enhance training efficiency. |
+| **Training Objectives**       | Trained with **Masked Language Modeling (MLM)** and **Next Sentence Prediction (NSP)** tasks. | Utilizes MLM and introduces a new task called **Sentence Order Prediction (SOP)**, focusing on modeling inter-sentence coherence by predicting the order of sentence segments. |
+| **Performance and Efficiency** | Achieves strong performance on various NLP tasks but with higher computational resources and memory usage. | Aims for parameter efficiency, achieving comparable or even superior performance on downstream tasks with fewer parameters and reduced computational requirements. |
+
+ALBERT introduces architectural innovations to enhance efficiency and reduce model size without compromising performance, distinguishing it from the original BERT model.
 
 ---
 
-#### Domain-specific BERT Models
+#### BERT vs DistilBERT
 
-Examine the process of creating domain-specific BERT models like BioBERT or SciBERT. What adaptations are made in terms of vocabulary and pre-training data? Evaluate how these changes enhance performance on domain-specific tasks.
+| Feature                     | BERT                                                | DistilBERT                                           |
+|-----------------------------|------------------------------------------------------|-----------------------------------------------------|
+| **Model Size and Parameters** | BERT-base has 12 layers and ~110 million parameters. | DistilBERT has 6 layers and ~66 million parameters, making it 40% smaller. |
+| **Knowledge Distillation**    | No distillation; trained directly on original objectives (MLM and NSP). | Uses **knowledge distillation** to transfer knowledge from BERT, resulting in reduced size and similar performance. |
+| **Training Objectives**       | Uses **Masked Language Modeling (MLM)** and **Next Sentence Prediction (NSP)**. | Uses a linear combination of **distillation loss**, **MLM loss**, and **cosine embedding loss**. No NSP is used. |
+| **Architecture**              | Includes token type embeddings, pooler, and 12 transformer layers with 768 hidden units. | Removes token type embeddings and pooler; reduces layers by half, retaining 768 hidden units per layer. |
+| **Training Data**             | Trained on English Wikipedia and Toronto Book Corpus. | Trained on the same corpus but with larger batches, dynamic masking, and without NSP. |
+| **Performance and Efficiency**| Achieves strong language understanding but requires more computational resources and inference time. | Retains 97% of BERT's performance on GLUE benchmark, is 60% faster in inference, and is suitable for edge devices. |
+
+DistilBERT achieves its efficiency by halving the number of layers while preserving the original hidden dimensions and leveraging knowledge distillation to maintain BERT's language understanding capabilities.
+
+---
+
+#### BERT vs BioBERT
+
+| Feature                     | BERT                                                | BioBERT                                             |
+|-----------------------------|------------------------------------------------------|-----------------------------------------------------|
+| **Domain**                  | General-purpose; pre-trained on general corpora like Wikipedia and BooksCorpus. | Domain-specific; pre-trained on biomedical corpora such as **PubMed abstracts** and **PMC full-text articles**. |
+| **Pre-training**            | Trained on general English texts, focusing on broad NLP tasks. | Initialized with BERT weights and further trained on **biomedical texts** for 23 days using eight NVIDIA V100 GPUs. |
+| **Pre-training Steps**      | Trained for 1M steps on general corpora.             | Trained up to 1M steps, with different versions based on 200K, 270K, 470K, or 1M steps depending on the biomedical corpora used. |
+| **Fine-Tuning Tasks**       | Performs well on general NLP tasks like sentiment analysis, NER, QA, etc. | Fine-tuned specifically for **biomedical NER**, **relation extraction (RE)**, and **question answering (QA)**, achieving state-of-the-art results in these domains. |
+| **Performance**             | Shows strong results across general NLP benchmarks but may lack specificity for biomedical texts. | Outperforms BERT in **biomedical NER**, **RE**, and **QA** tasks, achieving higher F1 scores, strict and lenient accuracy, and MRR across datasets. |
+| **Ablation Studies**        | Not specialized for domain-specific analysis.        | Ablation studies show significant improvements in performance with larger biomedical corpora and longer pre-training steps. BioBERT can recognize entities that BERT misses and provides better entity boundaries. |
+
+BioBERT extends BERT's architecture and performance by focusing on **biomedical language understanding**, leveraging domain-specific corpora to achieve higher accuracy in **biomedical text mining tasks**.
+
+---
+
+#### Comparison of Training Data Across BERT Variants
+
+| Model      | Pre-training Data                                         | Data Size                          | Data Characteristics                                             |
+|------------|------------------------------------------------------------|-------------------------------------|-------------------------------------------------------------------|
+| **BERT**   | English Wikipedia + BooksCorpus                           | ~3.3 billion words                 | General English text with a broad variety of topics.             |
+| **RoBERTa**| English Wikipedia, BooksCorpus, OpenWebText, CC-News      | ~160GB                              | Larger, more diverse dataset covering news, web pages, and general topics. |
+| **DistilBERT** | Same as BERT (Wikipedia + BooksCorpus)                | ~3.3 billion words                 | Uses the same data as BERT but with a distillation process for compression. |
+| **ALBERT** | English Wikipedia + BooksCorpus                           | ~3.3 billion words                 | Same as BERT but with repeated processing to improve efficiency and consistency. |
+| **BioBERT**| PubMed abstracts + PubMed Central (PMC) full-text articles| ~4.5 billion words (biomedical)    | Domain-specific biomedical texts focused on scientific literature and research papers. |
+
+BioBERT uses domain-specific data for biomedical text mining, while other models, including BERT, RoBERTa, DistilBERT, and ALBERT, are trained on general English corpora, with RoBERTa having the largest and most diverse dataset.
