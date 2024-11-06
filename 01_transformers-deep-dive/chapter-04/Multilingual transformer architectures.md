@@ -25,13 +25,13 @@ To further balance representation, oversampling of low-resource languages and un
 Following the Exponential Weighted Smoothing is explained to get a better undersatnding of its use in Multilingual Models:
 
 - **Purpose**: Adjust sampling probabilities to balance language representation, making the model focus more on low-resource languages.
-- **Concept**: EWS reduces the dominance of high-resource languages using an exponential scaling factor ($ \alpha$).
+- **Concept**: EWS reduces the dominance of high-resource languages using an exponential scaling factor ($\alpha$).
 
 **Formula**
 
-$
+```math
 p_i = \frac{n_i^\alpha}{\sum_{j} n_j^\alpha}
-$
+```
 
 Where:
 - \( p_i \): Probability of selecting language \( i \).
