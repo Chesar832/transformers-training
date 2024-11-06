@@ -143,46 +143,46 @@ XLM-RoBERTa is particularly effective for low-resource languages because it reli
 
 The **Alternating Language Model (ALM)** is a pre-training technique designed for cross-lingual representation learning. Unlike traditional translation language models (TLM) that use parallel sentences directly, ALM generates code-switched sentences by swapping phrases between parallel sentences in different languages using. This approach leverages bilingual corpora to create mixed-language data, enabling models to better understand and transfer linguistic patterns across languages. ALM's objective is to improve multilingual language models by training on code-switched sequences, where phrases are selectively swapped between source and target languages, controlled by specific parameters, to enhance cross-lingual comprehension.
 
-To help clarify the Alternating Language Model (ALM) approach, let’s work through an example using the terms and parameters \( a \), \( b \), \( c \), and \( d \) as defined in the provided text.
+To help clarify the Alternating Language Model (ALM) approach, let’s work through an example using the terms and parameters $a$, $b$, $c$, and $d$ as defined in the provided text.
 
 **Example:**
 Imagine we have the following parallel sentence pair:
 
-- **Source sentence** \( x = \{x_1, x_2, x_3, x_4\} \): "I love coffee"
-- **Target sentence** \( y = \{y_1, y_2, y_3, y_4\} \): "Me encanta el café"
+- **Source sentence** $x = \{x_1, x_2, x_3, x_4\}$: "I love coffee"
+- **Target sentence** $y = \{y_1, y_2, y_3, y_4\}$: "Me encanta el café"
 
-Now, let’s use the indices \( a \), \( b \), \( c \), and \( d \) to create a code-switched sequence. According to the document:
+Now, let’s use the indices $a$, $b$, $c$, and $d$ to create a code-switched sequence. According to the document:
 
-1. \( a \) and \( b \) define the range of tokens in the **source sentence** \( x \).
-2. \( c \) and \( d \) define the range of tokens in the **target sentence** \( y \).
+1. $a$ and $b$ define the range of tokens in the **source sentence** $x$.
+2. $c$ and $d$ define the range of tokens in the **target sentence** $y$.
 
 These indices allow us to "swap" phrases or segments between the two sentences in a controlled way. Here’s how we might set them in our example:
 
-**Setting Values for \( a \), \( b \), \( c \), and \( d \)**
+**Setting Values for $a$, $b$, $c$, and $d$**
 Let’s choose:
 
-- \( a = 1 \) and \( b = 2 \) — this means we will use tokens from \( x_1 \) to \( x_2 \) in the source sentence \( x \).
-- \( c = 3 \) and \( d = 4 \) — this means we will use tokens from \( y_3 \) to \( y_4 \) in the target sentence \( y \).
+- $a = 1$ and $b = 2$ — this means we will use tokens from $x_1$ to $x_2$ in the source sentence $x$.
+- $c = 3$ and $d = 4$ — this means we will use tokens from $y_3$ to $y_4$ in the target sentence $y$.
 
 **Code-Switched Sequence Generation**
 Using these indices, we create a code-switched sequence by selecting and merging parts from both sentences.
 
-1. Take the segment from \( x \) using tokens from \( x_1 \) to \( x_2 \): **"I love"**.
-2. Take the segment from \( y \) using tokens from \( y_3 \) to \( y_4 \): **"el café"**.
+1. Take the segment from $x$ using tokens from $x_1$ to $x_2$: **"I love"**.
+2. Take the segment from $y$ using tokens from $y_3$ to $y_4$: **"el café"**.
 
-The resulting **code-switched sequence** \( u \) could be:
+The resulting **code-switched sequence** $u$ could be:
 - **"I love el café"**
 
-**Interpretation of \( \alpha \) (Mixing Ratio)**
-The value \( \alpha \) determines the proportion of tokens from the source vs. the target sentence in the code-switched sequence. 
+**Interpretation of $\alpha$ (Mixing Ratio)**
+The value $\alpha$ determines the proportion of tokens from the source vs. the target sentence in the code-switched sequence. 
 
-- If \( \alpha = 1 \): We would use only tokens from the source sentence, so the code-switched sequence would be just \( x \) ("I love coffee").
-- If \( \alpha = 0 \): We would use only tokens from the target sentence, so the sequence would be just \( y \) ("Me encanta el café").
-- For \( 0 < \alpha < 1 \): We get a mix of both, as shown in the example above ("I love el café").
+- If $\alpha = 1$: We would use only tokens from the source sentence, so the code-switched sequence would be just $x$ ("I love coffee").
+- If $\alpha = 0$: We would use only tokens from the target sentence, so the sequence would be just $y$ ("Me encanta el café").
+- For $0 < \alpha < 1$: We get a mix of both, as shown in the example above ("I love el café").
 
 In ALM, the training objective is to maximize the likelihood of predicting the masked tokens in this code-switched sentence using a masked language modeling (MLM) loss. For example, if we mask "love" in "I love el café," the model should learn to predict "love" based on context.
 
-The loss function \( \mathcal{L}_{\text{ALM}}^{(x,y)} \) sums the log probabilities of correctly predicting each masked token in the code-switched sentence \( z \) (here, "I [MASK] el café") over a set of masked positions \( M \).
+The loss function $\mathcal{L}_{\text{ALM}}^{(x,y)}$ sums the log probabilities of correctly predicting each masked token in the code-switched sentence $z$ (here, "I [MASK] el café") over a set of masked positions $M$.
 
 The goal of ALM is to help a model learn from mixed-lingual context, improving its ability to generalize across languages.
 
