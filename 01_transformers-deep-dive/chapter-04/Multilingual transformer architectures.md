@@ -35,8 +35,8 @@ p_i = \frac{n_i^\alpha}{\sum_{j} n_j^\alpha}
 
 Where:
 - $p_i$: Probability of selecting language $i$.
-- \( n_i \): Number of sentences for language \( i \).
-- \( \alpha \): Smoothing factor.
+- $n_i$: Number of sentences for language $i$.
+- $\alpha$): Smoothing factor.
 
 **Example**
 
@@ -48,19 +48,19 @@ Where:
   - Language A: 91%
   - Language B: 9%
   - Language C: 0.9%
-- **New Sampling with \( \alpha = 0.7 \)**:
+- **New Sampling with $\alpha = 0.7$**:
   - Language A: 
-    $
+    ```math
     p_A = \frac{10M^{0.7}}{10M^{0.7} + 1M^{0.7} + 100K^{0.7}} \approx 64\%
-    $
+    ```
   - Language B: 
-    $
+    ```math
     p_B = \frac{1M^{0.7}}{10M^{0.7} + 1M^{0.7} + 100K^{0.7}} \approx 25\%
-    $
+    ```
   - Language C: 
-    $
+    ```math
     p_C = \frac{100K^{0.7}}{10M^{0.7} + 1M^{0.7} + 100K^{0.7}} \approx 11\%
-    $
+    ```
 
 - Key Benefit: Increases the exposure of low-resource languages, ensuring more balanced training across languages.
 
