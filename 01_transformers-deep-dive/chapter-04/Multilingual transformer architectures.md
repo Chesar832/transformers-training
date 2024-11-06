@@ -34,7 +34,7 @@ p_i = \frac{n_i^\alpha}{\sum_{j} n_j^\alpha}
 ```
 
 Where:
-- \( p_i \): Probability of selecting language \( i \).
+- $p_i$: Probability of selecting language $i$.
 - \( n_i \): Number of sentences for language \( i \).
 - \( \alpha \): Smoothing factor.
 
