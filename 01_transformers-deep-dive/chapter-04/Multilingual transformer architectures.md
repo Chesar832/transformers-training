@@ -50,9 +50,7 @@ Where:
   - Language C: 0.9%
 - **New Sampling with $\alpha = 0.7$**:
   - Language A: 
-    ```math
-    p_A = \frac{10M^{0.7}}{10M^{0.7} + 1M^{0.7} + 100K^{0.7}} \approx 64\%
-    ```
+    $$p_A = \frac{10M^{0.7}}{10M^{0.7} + 1M^{0.7} + 100K^{0.7}} \approx 64\%$$
   - Language B: 
     ```math
     p_B = \frac{1M^{0.7}}{10M^{0.7} + 1M^{0.7} + 100K^{0.7}} \approx 25\%
