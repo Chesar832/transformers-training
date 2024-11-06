@@ -52,13 +52,10 @@ Where:
   - Language A: 
     $$p_A = \frac{10M^{0.7}}{10M^{0.7} + 1M^{0.7} + 100K^{0.7}} \approx 64\%$$
   - Language B: 
-    ```math
-    p_B = \frac{1M^{0.7}}{10M^{0.7} + 1M^{0.7} + 100K^{0.7}} \approx 25\%
-    ```
+    $$p_B = \frac{1M^{0.7}}{10M^{0.7} + 1M^{0.7} + 100K^{0.7}} \approx 25\%$$
   - Language C: 
-    ```math
-    p_C = \frac{100K^{0.7}}{10M^{0.7} + 1M^{0.7} + 100K^{0.7}} \approx 11\%
-    ```
+    $$p_C = \frac{100K^{0.7}}{10M^{0.7} + 1M^{0.7} + 100K^{0.7}} \approx 11\%$$
+
 
 - Key Benefit: Increases the exposure of low-resource languages, ensuring more balanced training across languages.
 
