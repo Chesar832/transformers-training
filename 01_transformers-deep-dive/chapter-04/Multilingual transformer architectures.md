@@ -194,29 +194,82 @@ The following figure shows how ALM works using the source and target sequences (
 
 Considering the parallel corpora and the kind of task used during training, I think that the challenge of imbalance data across languages is mitigated by increasing the exposure of the low-resource languages via code-switched sequences of tokens, so it's a kind of data augmentation because to the same sentence but with different ratios we could handle multiple iterations wih different masked tokens (`[MASK]`) that makes the model more robust in these low-resource languages.
 
-## Unicoder
+# Unicoder
 
-#### Cross-lingual Word Recovery (CLWR)
-- How does CLWR refine the alignment of word embeddings across languages, and why is it critical for translation-based tasks?
+## Cross-lingual Word Recovery (CLWR)
+#### How does CLWR refine the alignment of word embeddings across languages, and why is it critical for translation-based tasks?
 
 First, I'll explain what CLWR is and how it works in the Unicoder. In addition, consider that I used the paper [Unicoder: A Universal Language Encoder by Pre-training with Multiple Cross-lingual Tasks](https://arxiv.org/abs/1909.00964) which belongs to the original paper about the Unicoder developed by Microsoft.
 
+In a nutshell, the *CLWR* is a task that tries to predict the `[MASK]` tokens of the original sentence based on the translated sentence using attention scores over the tokens of the translated sentence. Then, I explain how CLWR works.
 
-In a nutshell, the *CLWR* is a task that consider...
+The CLWR works with iterations that use bilingual sentence pairs $(X, Y)$ where X and Y are sentences in different languages but with alignment.
 
-#### Cross-lingual Paraphrase Classification (CLPC)
-- In what ways does CLPC help models distinguish between paraphrases in different languages, and how does it impact semantic similarity tasks?
+![](../../img/unicoder_01.jpg)
 
-#### Cross-lingual Masked LM (CLMLM)
-- What are the advantages of using CLMLM over standard MLM in achieving better cross-lingual word prediction?
+We have to consider that the token embeddings has three components:
 
-#### What is the significance of leveraging additional cross-lingual supervision signals in Unicoder, and how does it differ from standard MLM objectives?
+![](../../img/unicoder_02.jpg)
 
+So, we're going to take these values for the embeddings just to make a full example considering $d = 3$ which means that each embedding is 3-dimensional. The $X_{sous}$ token is highlighted because is the meaning of the `[MASK]` token but in the target language.
+
+![](../../img/unicoder_03.jpg)
+
+Now, following the CLWR formula, we start to compute the Attention matrix denoted as $A_{ij}$ which follows the formula $A_{ij} = W * [x_i;y_i]$ where $W$ is a trainable matrix and $*$ is a element-wise multiplication. In addition, for this demonstration, we take $W = [0.2,0.1, 0.3, 0.4, 0.5, 0.6]$.
+
+But, why $W$ is a 6-dimensional vector? that's because it will be multiplied by a concatenation of $x_i;y_i$ and each token has a 3-dimensional embedding.
+
+Let's compute one value of the Attention matrix for the masked token and the $y_{sous}$ token:
+
+![](../../img/unicoder_04.jpg)
+
+According to the formula of CLWR, first we compute the Attention matrix values $A_{ij}$ for the token $x^{t}_{i}$, then we apply the $Softmax()$ function to normalize the attention scores and finally we multiply each attention score by its $y$ embedding for the masked token.
+
+- $A_{[\text{MASK}], \text{Le}} \cdot y_{\text{Le}} = 0.115 \times [0.1, 0.1, 0.1] = [0.0115, 0.0115, 0.0115]$
+- $A_{[\text{MASK}], \text{chat}} \cdot y_{\text{chat}} = 0.127 \times [0.2, 0.2, 0.2] = [0.0254, 0.0254, 0.0254]$
+- $A_{[\text{MASK}], \text{est}} \cdot y_{\text{est}} = 0.133 \times [0.3, 0.3, 0.3] = [0.0399, 0.0399, 0.0399]$
+- $A_{[\text{MASK}], \text{actuellement}} \cdot y_{\text{actuellement}} = 0.155 \times [0.2, 0.1, 0.3] = [0.031, 0.0155, 0.0465]$
+- $A_{[\text{MASK}], \text{sous}} \cdot y_{\text{sous}} = 0.213 \times [0.4, 0.5, 0.6] = [0.0852, 0.1065, 0.1278]$
+- $A_{[\text{MASK}], \text{la}} \cdot y_{\text{la}} = 0.109 \times [0.1, 0.2, 0.1] = [0.0109, 0.0218, 0.0109]$
+- $A_{[\text{MASK}], \text{table}} \cdot y_{\text{table}} = 0.147 \times [0.3, 0.3, 0.4] = [0.0441, 0.0441, 0.0588]$
+
+Finally, we'll sum the matrices to get the *contextualized embedding $x^{t}_{i}$*:
+
+$x^{t}_{\text{[MASK]}} = [0.248, 0.2647, 0.3213]$
+
+Then the model will search the most similar tokens and it will return the tokens. In this case the embeddings would be most similar to the representation of "under".
+
+So, **Cross-Lingual Word Recovery (CLWR)** refines word embedding alignment across languages by training models to predict masked words in one language using contextual clues from another language. This process forces the model to position semantically equivalent words (like "cat" in English and "chat" in French) close to each other in the shared embedding space, creating a language-agnostic representation. The cross-lingual attention mechanism in CLWR helps the model learn to focus on contextually relevant words from the paired sentence, aligning similar meanings across languages and improving understanding of subtle nuances and polysemous words (e.g., "bank" meaning riverbank or financial institution based on context).
+
+This alignment is essential for translation-based tasks because it allows the model to directly map equivalent words, improving translation accuracy and consistency. Additionally, it makes the model better at transferring knowledge from one language to another, which is especially valuable for low-resource languages. With aligned embeddings, the model becomes more context-aware, enabling accurate phrase and sentence-level translation while preserving meaning. By creating a unified multilingual space, CLWR reduces language-specific biases, facilitating high-quality, coherent, and contextually appropriate translations across a wide range of language pairs.
+
+## Cross-lingual Paraphrase Classification (CLPC)
+#### In what ways does CLPC help models distinguish between paraphrases in different languages, and how does it impact semantic similarity tasks?
+
+According to the Unicoder paper, CLPC is designed to train multilingual models to recognize paraphrase relationships across languages, focusing on semantic equivalence rather than exact linguistic similarity. This approach encourages the model to embed sentences with similar meanings closer together in the shared embedding space, even if they are phrased differently or exist in different languages.
+
+The Unicoder paper highlights how CLPC impacts semantic similarity tasks by refining the model’s understanding of sentence-level meaning, which supports various downstream applications. Tasks like cross-lingual retrieval, multilingual question-answer matching, and cross-lingual entailment detection benefit from CLPC, as it enables the model to discern when two sentences convey the same meaning, regardless of linguistic differences. Thus, the description provided in the answer is consistent with the original paper’s presentation of how CLPC strengthens semantic alignment across languages, making the model more adept at recognizing and working with paraphrased or semantically similar content across language boundaries.
+
+## Cross-lingual Masked LM (CLMLM)
+#### What are the advantages of using CLMLM over standard MLM in achieving better cross-lingual word prediction?
+
+The Cross-Lingual Masked Language Model (CLMLM) offers significant advantages over standard Masked Language Modeling (MLM) by using bilingual context for word prediction. In standard MLM, the model learns to predict masked words within a single language, which limits its understanding of cross-lingual relationships. In contrast, CLMLM masks words in one language and uses context from a parallel sentence in another language to predict the masked token. In the image, for instance, English and Chinese sentences are processed together: the English word "Our" and the Chinese phrase "如果不" (meaning "if not") are aligned within a shared transformer model. This setup allows the model to leverage positional, language, and token embeddings from both languages, resulting in improved semantic alignment across languages.
+
+By training on such bilingual contexts, CLMLM aligns semantically similar words, like "earth" in English and "地球" in Chinese, closer in the embedding space, making them easier to identify as cross-lingual equivalents. This bilingual embedding alignment, achieved through the cross-lingual masking structure shown in the image, supports more accurate word predictions and enhances the model's ability to perform multilingual NLP tasks. CLMLM’s approach of embedding words with similar meanings closer together is particularly beneficial for translation, cross-lingual retrieval, and other tasks that rely on cross-lingual semantic similarity. Thus, by refining word alignment across languages, CLMLM outperforms standard MLM for tasks that require understanding across language boundaries.
+
+![](../../img/CLMLM.jpg)
 
 #### How does Unicoder ensure both monolingual and cross-lingual effectiveness in downstream tasks?
 
+Unicoder ensures both monolingual and cross-lingual effectiveness in downstream tasks by training on a combination of monolingual and cross-lingual pre-training objectives. For monolingual effectiveness, Unicoder uses tasks like Masked Language Modeling (MLM), which involves masking random words within a single language and training the model to predict these words based on the surrounding context. This helps Unicoder develop strong language-specific representations and understand the syntax, grammar, and semantics of individual languages, making it effective for monolingual tasks like sentiment analysis, named entity recognition, and text classification.
+
+For cross-lingual effectiveness, Unicoder leverages cross-lingual tasks such as Cross-Lingual Masked Language Modeling (CLMLM), Cross-Lingual Word Recovery (XLWR), and Cross-Lingual Paraphrase Classification (CLPC). These tasks require the model to predict or align words and phrases across languages, often using context from one language to predict or identify semantically equivalent words in another language. As a result, Unicoder learns to align similar concepts and phrases across languages in a shared embedding space, which is crucial for cross-lingual tasks like translation, cross-lingual information retrieval, and question-answering. By combining monolingual and cross-lingual training, Unicoder creates language-agnostic representations that can transfer seamlessly between languages while retaining high performance on both monolingual and multilingual tasks.
 
 #### How does Unicoder integrate **Cross-lingual Word Alignment (CLWA)** to refine word-level embeddings across languages?
+
+Unicoder integrates **Cross-Lingual Word Alignment (CLWA)** to refine word-level embeddings across languages by aligning semantically similar words in different languages within a shared embedding space. In CLWA, the model is exposed to parallel or aligned word pairs across languages, such as English and French or English and Chinese, and learns to position these words close to each other in the embedding space. This alignment is achieved through a combination of attention mechanisms and training objectives that encourage the model to recognize and align words with similar meanings, even if they have different lexical forms.
+
+The alignment process in CLWA uses **cross-lingual attention** to directly map words across languages. When a word appears in one language, the model focuses on the context provided by its parallel word in the other language. For instance, if "cat" in English is aligned with "chat" in French, Unicoder learns that these words share similar contexts and should be close in the shared embedding space. By repeatedly aligning words in this way, Unicoder refines its embeddings, ensuring that semantically similar words from different languages are positioned closer together. This word-level alignment is crucial for improving the model's performance on tasks that require cross-lingual understanding, such as translation, cross-lingual information retrieval, and multilingual text classification, as it provides a strong foundation for accurately transferring knowledge between languages.
 
 ## INFOXLM
 - What techniques does INFOXLM introduce to enhance cross-lingual natural language understanding, and how do they affect representation alignment?
@@ -255,44 +308,3 @@ In a nutshell, the *CLWR* is a task that consider...
 - How does a multilingual NLG model handle the diversity of languages in terms of grammar, sentence structure, and semantic consistency across generated outputs?
 - How does the **Denoising Auto-Encoder (DAE)** technique contribute to the robustness of multilingual NLG models in handling noisy input?
 - In what ways does **Cross-lingual Auto-Encoding (XAE)** help multilingual NLG models in learning consistent cross-lingual generation patterns?
-
-### Cross-Lingual Techniques
-
-#### Masked Language Model (MLM)
-- How does MLM perform in cross-lingual settings, and what are the limitations of using MLM alone for multilingual representation alignment?
-
-#### Next Sentence Prediction (NSP)
-- What is the impact of the NSP task on cross-lingual understanding, especially in sentence-level coherence tasks across languages?
-
-#### Causal Language Modeling (CLM)
-- How does CLM enhance sequential language modeling within a monolingual context, and why is it important for building foundational representations?
-
-#### Translation Language Model (TLM)
-- How does TLM utilize parallel corpora to improve token prediction, and what specific benefits does it offer over MLM in cross-lingual training scenarios?
-
-#### Cross-lingual Contrastive Learning (XLCO)
-- How does XLCO improve the representation of multilingual embeddings by focusing on contrasting similar and dissimilar pairs?
-
-#### Cross-lingual Word Alignment (CLWA)
-- What role does CLWA play in fine-tuning word-level embeddings, and how does it enhance translation quality?
-
-#### Cross-lingual Sentence Alignment (CLSA)
-- How does CLSA contribute to sentence-level representation alignment, and what benefits does it provide in cross-lingual retrieval tasks?
-
-#### Cross-attention Masked LM (CAMLM)
-- How does CAMLM incorporate cross-attention mechanisms for better token prediction across languages?
-
-#### Back Translation Masked Language Modeling (BTMLM)
-- How does BTMLM utilize back translation to improve language modeling, and what advantages does it provide for generating multilingual text?
-
-#### Bidirectional Dual Encoder with Additive Margin Softmax
-- What is the role of additive margin softmax in improving cross-lingual retrieval accuracy in models like LaBSE?
-
-#### Sequence-to-Sequence LM (Seq2SeqLM)
-- How does Seq2SeqLM facilitate cross-lingual generation tasks, and what challenges does it address in multilingual NLG?
-
-#### Denoising Auto-Encoder (DAE)
-- How does DAE handle noise in multilingual inputs, and why is it crucial for enhancing text generation in NLG models?
-
-#### Cross-lingual Auto-Encoding (XAE)
-- How does XAE support cross-lingual training by reconstructing masked or corrupted input across different languages?
