@@ -5,7 +5,7 @@
 
 👩🏻‍💻 Most of the notebooks were created and run on Kaggle because it enables the use of GPUs, which allow parallelization and lower training times.
 
-🔎 Additionally each one of these notebooks use Kaggle's Datasets, that's why this repo does not have data files such as csv's expect for replicated notebooks (almost exact copies of the book code).
+🔎 Additionally each one of these notebooks use Kaggle's Datasets, that's why this repo does not have data files such as csv's , but replicated notebooks do have its respective data.
 
 #### Contents
 1. **Attention is all You Need**
