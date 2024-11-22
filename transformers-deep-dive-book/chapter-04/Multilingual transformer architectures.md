@@ -289,7 +289,7 @@ $$
 z = \lambda f(x_i) + (1 - \lambda) f(x_j)
 $$
   
-  Where $( \lambda \in [0, 1] )$ is randomly sampled from a Beta distribution. This interpolation produces synthetic negatives that are closer to the true positives, making the task of distinguishing them more challenging. XLCO uses mixup to encourage the model to learn more robust and fine-grained features, enabling better discrimination between parallel sentences (translations) and ambiguous or blended non-parallel sentences, ultimately improving generalization in cross-lingual representation learning.
+2. Where $( \lambda \in [0, 1] )$ is randomly sampled from a Beta distribution. This interpolation produces synthetic negatives that are closer to the true positives, making the task of distinguishing them more challenging. XLCO uses mixup to encourage the model to learn more robust and fine-grained features, enabling better discrimination between parallel sentences (translations) and ambiguous or blended non-parallel sentences, ultimately improving generalization in cross-lingual representation learning.
 
 
 #### What is the role of the InfoNCE loss function in XLCO, and how is it defined?
