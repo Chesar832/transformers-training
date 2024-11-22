@@ -281,8 +281,9 @@ The main goal of XLCO is to generate the closest vectorial representations for s
 To achieve that goal the model uses a loss function that get lower error values when the parallel sentences has close representations and the distances with the non-parallel sentences is the highest possible. Even, the model use hard negative sentences to generate challenging sentences for the training phase with Mixup contrast and Momentum.
 
 Some details about hard negative sampling:
-- **Momentum**: Use another encoder which applies momentum to slow the steps in the optimization, so this model generates vectorial representations of the sentences, but because of the slower steps in its training it generates worse representations that the original model in the same time $t$. Indeed, it's like the momentum model generates earlier representations of the original model because it is also being optimized in the training but with a slow learning in the same direction that the original encoder used.
-- **Mixup sampling**: It generates harder negative samples by interpolating between two unrelated negative representations in the embedding space. The formula for a mixup sample \(z\) is:
+1. **Momentum**: Use another encoder which applies momentum to slow the steps in the optimization, so this model generates vectorial representations of the sentences, but because of the slower steps in its training it generates worse representations that the original model in the same time $t$. Indeed, it's like the momentum model generates earlier representations of the original model because it is also being optimized in the training but with a slow learning in the same direction that the original encoder used.
+
+2. **Mixup sampling**: It generates harder negative samples by interpolating between two unrelated negative representations in the embedding space. The formula for a mixup sample \(z\) is:
 
 $$
 z = \lambda f(x_i) + (1 - \lambda) f(x_j)
