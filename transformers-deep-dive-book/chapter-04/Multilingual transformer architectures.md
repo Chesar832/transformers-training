@@ -8,7 +8,7 @@ By tackling these topics, I aim to strengthen my comprehension of how multilingu
 
 ---
 
-## Basic Multilingual Transformer
+# Basic Multilingual Transformer
 ##### What is the role of subword tokenization in the architecture of a Basic Multilingual Transformer, and why is it essential for handling diverse languages effectively?
 
 Subword tokenization is crucial in the architecture of a Basic Multilingual Transformer (BMT) because it splits words into smaller, more meaningful units (like prefixes, suffixes, or character n-grams). This allows the model to handle rare and compound words effectively by representing them through a combination of these subword units, preserving their semantic information. By creating a shared vocabulary of subwords, the model can recognize common patterns across languages, enabling it to generalize better and process multiple languages simultaneously.
@@ -272,39 +272,63 @@ Unicoder integrates **Cross-Lingual Word Alignment (CLWA)** to refine word-level
 The alignment process in CLWA uses **cross-lingual attention** to directly map words across languages. When a word appears in one language, the model focuses on the context provided by its parallel word in the other language. For instance, if "cat" in English is aligned with "chat" in French, Unicoder learns that these words share similar contexts and should be close in the shared embedding space. By repeatedly aligning words in this way, Unicoder refines its embeddings, ensuring that semantically similar words from different languages are positioned closer together. This word-level alignment is crucial for improving the model's performance on tasks that require cross-lingual understanding, such as translation, cross-lingual information retrieval, and multilingual text classification, as it provides a strong foundation for accurately transferring knowledge between languages.
 
 ## INFOXLM
-- What techniques does INFOXLM introduce to enhance cross-lingual natural language understanding, and how do they affect representation alignment?
-- How does INFOXLM integrate information retrieval signals with cross-lingual training, and why is this beneficial?
-- What is the role of **Cross-lingual Sentence Alignment (CLSA)** in INFOXLM, and how does it improve the model's performance in tasks like translation and multilingual classification?
+#### What techniques does INFOXLM introduce to enhance cross-lingual natural language understanding, and how do they affect representation alignment?
+The Information-Theoric Cross-Lingual Model (INFOXLM) introduces a new task called Cross-Lingual Contrastive Learning (XLCO) which enhances the model alignment by leveraging the multilingual context of the data maximizing the mutual information between contexts making similar context in different languages close in the vectorial space because the pre-training task is based on making predictions based on the context of the sentence in other language.
 
-#### AMBER
-- How does AMBER extend the single-encoder architecture to improve semantic understanding across languages?
-- Discuss the training strategies used by AMBER to balance language representation across high-resource and low-resource languages.
-- How does **Cross-lingual Contrastive Learning (XLCO)** contribute to AMBER's ability to differentiate semantically similar and dissimilar sentences across languages?
+#### What is the main goal of Cross-lingual Contrastive Learning (XLCO), and how does it achieve this?
+The main goal of XLCO is to generate the closest vectorial representations for same or parallel context despite the language and, at the same time make those representations away from their non-parallel sentences (this include very similar but different contexts and unrelated contexts which are easier to separate for model in the vectorial space).
+
+To achieve that goal the model uses a loss function that get lower error values when the parallel sentences has close representations and the distances with the non-parallel sentences is the highest possible. Even, the model use hard negative sentences to generate challenging sentences for the training phase with Mixup contrast and Momentum.
+
+Some details about hard negative sampling:
+- **Momentum**: Use another encoder which applies momentum to slow the steps in the optimization, so this model generates vectorial representations of the sentences, but because of the slower steps in its training it generates worse representations that the original model in the same time $t$. Indeed, it's like the momentum model generates earlier representations of the original model because it is also being optimized in the training but with a slow learning in the same direction that the original encoder used.
+- **Mixup sampling**: It generates harder negative samples by interpolating between two unrelated negative representations in the embedding space. The formula for a mixup sample \(z\) is:
+
+$$
+z = \lambda f(x_i) + (1 - \lambda) f(x_j)
+$$
+  
+  Where $( \lambda \in [0, 1] )$ is randomly sampled from a Beta distribution. This interpolation produces synthetic negatives that are closer to the true positives, making the task of distinguishing them more challenging. XLCO uses mixup to encourage the model to learn more robust and fine-grained features, enabling better discrimination between parallel sentences (translations) and ambiguous or blended non-parallel sentences, ultimately improving generalization in cross-lingual representation learning.
+
+
+#### What is the role of the InfoNCE loss function in XLCO, and how is it defined?
+
+## AMBER
+#### How does AMBER extend the single-encoder architecture to improve semantic understanding across languages?
+#### Discuss the training strategies used by AMBER to balance language representation across high-resource and low-resource languages.
+#### How does Cross-lingual Contrastive Learning (XLCO) contribute to AMBER's ability to differentiate semantically similar and dissimilar sentences across languages?
 
 #### ERNIE-M
-- What specific strategies does ERNIE-M use to achieve improved cross-lingual representation and semantic alignment?
-- How does ERNIE-M incorporate knowledge into its training process, and why is this advantageous for cross-lingual tasks?
-- Explain how **Cross-lingual Paraphrase Classification (CLPC)** is used in ERNIE-M to refine the model’s ability to detect paraphrases across languages.
+#### What specific strategies does ERNIE-M use to achieve improved cross-lingual representation and semantic alignment?
+#### How does ERNIE-M incorporate knowledge into its training process, and why is this advantageous for cross-lingual tasks?
+#### Explain how Cross-lingual Paraphrase Classification (CLPC) is used in ERNIE-M to refine the model’s ability to detect paraphrases across languages.
 
-#### HITCL
-- What is HITCL, and how does it handle high-level representation alignment across languages?
-- How does HITCL utilize contrastive learning for better cross-lingual understanding, and what challenges does this approach address?
-- In what ways does **Cross-lingual Word Recovery (CLWR)** assist HITCL in learning more precise word-level alignments?
+## HITCL
+#### What is HITCL, and how does it handle high-level representation alignment across languages?
+#### How does HITCL utilize contrastive learning for better cross-lingual understanding, and what challenges does this approach address?
+#### In what ways does Cross-lingual Word Recovery (CLWR) assist HITCL in learning more precise word-level alignments?
 
-### Dual-Encoder Multilingual NLU
+# Dual-Encoder Multilingual NLU
 
-#### LaBSE
-- How does LaBSE differ from single-encoder models in terms of sentence embedding generation and cross-lingual retrieval?
-- What challenges does LaBSE face when aligning multilingual embeddings, and how are they mitigated in its architecture?
-- How does LaBSE utilize the **Bidirectional Dual Encoder with Additive Margin Softmax** to improve retrieval performance across languages?
+## LaBSE
+#### How does LaBSE differ from single-encoder models in terms of sentence embedding generation and cross-lingual retrieval?
 
-#### mUSE
-- Explain how mUSE employs dual-encoder architecture to handle cross-lingual semantic similarity tasks.
-- What makes mUSE suitable for tasks like semantic search and cross-lingual question-answering compared to other multilingual models?
-- How does mUSE leverage **Sequence-to-Sequence LM (Seq2SeqLM)** for tasks that involve generating responses in different languages?
+#### What challenges does LaBSE face when aligning multilingual embeddings, and how are they mitigated in its architecture?
 
-### Multilingual NLG
-- What are the primary differences between multilingual natural language generation (NLG) and natural language understanding (NLU) models?
-- How does a multilingual NLG model handle the diversity of languages in terms of grammar, sentence structure, and semantic consistency across generated outputs?
-- How does the **Denoising Auto-Encoder (DAE)** technique contribute to the robustness of multilingual NLG models in handling noisy input?
-- In what ways does **Cross-lingual Auto-Encoding (XAE)** help multilingual NLG models in learning consistent cross-lingual generation patterns?
+#### How does LaBSE utilize the Bidirectional Dual Encoder with Additive Margin Softmax to improve retrieval performance across languages?
+
+### mUSE
+#### Explain how mUSE employs dual-encoder architecture to handle cross-lingual semantic similarity tasks.
+
+#### What makes mUSE suitable for tasks like semantic search and cross-lingual question-answering compared to other multilingual models?
+
+#### How does mUSE leverage Sequence-to-Sequence LM (Seq2SeqLM) for tasks that involve generating responses in different languages?
+
+## Multilingual NLG
+#### What are the primary differences between multilingual natural language generation (NLG) and natural language understanding (NLU) models?
+
+#### How does a multilingual NLG model handle the diversity of languages in terms of grammar, sentence structure, and semantic consistency across generated outputs?
+
+#### How does the Denoising Auto-Encoder (DAE) technique contribute to the robustness of multilingual NLG models in handling noisy input?
+
+#### In what ways does Cross-lingual Auto-Encoding (XAE) help multilingual NLG models in learning consistent cross-lingual generation patterns?
