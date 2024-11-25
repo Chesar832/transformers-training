@@ -294,10 +294,62 @@ $$
 
 #### What is the role of the InfoNCE loss function in XLCO, and how is it defined?
 
+The InfoNCE loss function in **Cross-lingual Contrastive Learning (XLCO)** plays a critical role in aligning cross-lingual sentence embeddings. It ensures that embeddings of parallel sentence pairs (e.g., $(x_i = \text{"The cat sleeps"})$ in English and ($y_i = \text{"El gato duerme"}$ in Spanish) are close in the embedding space, while embeddings of non-parallel sentences are pushed farther apart. This is achieved by maximizing the mutual information between the embeddings of parallel sentences using a contrastive approach. The loss function focuses on maximizing the similarity of the correct translation pair and minimizing the similarity of unrelated negative samples, thereby improving the alignment of multilingual sentence representations.
+
+Mathematically, the InfoNCE loss for XLCO is defined as:
+
+$$
+\mathcal{L}_{XLCO}^{(x_i, y_i)} = - \log \frac{\exp\left(f(x_i)^\top f(y_i)\right)}{\sum_{j=1}^N \exp\left(f(x_i)^\top f(y_j)\right)}
+$$
+
+Here, $f(x_i)$ and $f(y_i)$ are the embeddings of the source sentence and its correct translation, while $f(y_j)$ represents embeddings of all candidate sentences in the target language, including negatives. The numerator emphasizes the similarity between $x_i$ and its correct translation $y_i$, while the denominator includes all potential matches, forcing the model to differentiate the correct translation from incorrect ones. By employing this contrastive learning framework, XLCO learns robust sentence-level cross-lingual representations that are useful for multilingual tasks such as translation retrieval and semantic search.
+
 ## AMBER
 #### How does AMBER extend the single-encoder architecture to improve semantic understanding across languages?
-#### Discuss the training strategies used by AMBER to balance language representation across high-resource and low-resource languages.
-#### How does Cross-lingual Contrastive Learning (XLCO) contribute to AMBER's ability to differentiate semantically similar and dissimilar sentences across languages?
+AMBER extends its capabilities introducing two new pre-training tasks which are Cross-lingual Word Alignment (CLWA) and Cross-lingual Sentences Alignment (CLSA). But, it also includes some other pre-training tasks such as MLM and TLM.
+
+
+### What is CLSA?
+
+**Cross-lingual Sentence Alignment (CLSA)** is a method designed to align sentence embeddings across languages. It ensures that a source sentence and its translation have similar embeddings in a shared vector space while unrelated sentences are placed farther apart. CLSA achieves this by leveraging **parallel data** (sentence-translation pairs) and **monolingual data**, optimizing a contrastive loss to distinguish correct translations from incorrect ones.
+
+CLSA uses a **contrastive loss function** to align embeddings. For a source sentence $x$ and its correct translation $y$, it:
+1. **Encodes Sentences:** Computes sentence embeddings $c_x$ and $c_y$ by averaging token embeddings from the last layer of the encoder.
+2. **Contrastive Learning:** Maximizes similarity between $c_x$ and $c_y$ (positive pair) while minimizing similarity between $c_x$ and embeddings of unrelated candidates $y'$ (negative samples).
+3. **Candidate Pool:** Negative samples $y'$ are drawn from both parallel ($\mathcal{P}$) and monolingual ($\mathcal{M}$) data.
+
+The CLSA loss is defined as:
+
+$$
+\mathcal{L}_{\text{CLSA}}(x, y) = -\log \frac{\exp(c_x^\top c_y)}{\sum_{y' \in \mathcal{M} \cup \mathcal{P}} \exp(c_x^\top c_{y'})}.
+$$
+
+1. **Numerator:**
+   - $\exp(c_x^\top c_y)$: The similarity score between the source sentence $x$ and its correct translation $y$.
+2. **Denominator:**
+   - $\sum_{y' \in \mathcal{M} \cup \mathcal{P}} \exp(c_x^\top c_{y'})$: The sum of similarity scores between $x$ and all candidate sentences $y'$, including both positive and negative samples.
+3. **Objective:**
+   - The loss maximizes the similarity of $c_x$ with $c_y$ while reducing similarity with incorrect candidates $y'$.
+
+For example, considering the next examples we can see how the Loss Function looks for lower losses focusing on adjust the model's parameters to do similar the $x$ and $y$ vectors, but making $y'$ different in the same vectorial space because they are not parallel sentences (translation of each other).
+
+For $x = \text{"The cat sleeps"}$, $y = \text{"El gato duerme"}$, and candidates $y' = \{\text{"El perro duerme"}, \text{"La casa es roja"}\}$:
+1. The numerator focuses on the similarity between $x$ and $y$ (true translation).
+2. The denominator forces the model to separate $x$ from unrelated $y'$ (negative samples).
+
+By minimizing $\mathcal{L}_{\text{CLSA}}$, the model learns to align correct translations and push apart unrelated sentences, creating robust language-agnostic embeddings.
+
+### What is CLWA?
+
+Cross-lingual Word Alignment (CLWA) is a method designed to learn how words in one language align with words in another, using parallel corpora as training data. The approach trains a transformer model to establish these alignments through two complementary attention mechanisms: one measuring how well source words align to target words, and the other measuring how well target words align back to source words. These are referred to as the source-to-target attention matrix ($A_{x \to y}$) and the target-to-source attention matrix ($A_{y \to x}$), respectively.
+
+The key idea in CLWA is to ensure that these two attention matrices are consistent with one another. In other words, the word alignments inferred from source-to-target attention should closely resemble those inferred from target-to-source attention, creating a symmetric and robust alignment. During training, the model is encouraged to minimize the difference between these two matrices, which ensures that the word alignments are both accurate and reliable across languages. This approach is critical for improving tasks like machine translation and multilingual understanding, as it helps preserve the relationships and meanings of words across different languages.
+
+#### How does CLWA and CLSA contribute to AMBER's ability to differentiate semantically similar and dissimilar sentences across languages?
+
+In AMBER CLWA pre-training task improves the model's capability to align tokens between sentences and make it robust across different languages since its objective is to align the attention matrices between the source and target language, so this results in consistent and similar attention values between the sentences which result beneficial for downstream tasks like Machine Translation.
+
+On the other hand, CLSA has other important function which consists of make the encoder's emebddings similar in case of parallel sentences but in other cases where $y_{i}$ and $y_{j}$ where $i\neq j$ are not parallel sentences it adjust the model to separate them in the vectorial space as far as possible.
 
 #### ERNIE-M
 #### What specific strategies does ERNIE-M use to achieve improved cross-lingual representation and semantic alignment?
