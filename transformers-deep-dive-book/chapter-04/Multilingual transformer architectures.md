@@ -351,10 +351,41 @@ In AMBER CLWA pre-training task improves the model's capability to align tokens 
 
 On the other hand, CLSA has other important function which consists of make the encoder's emebddings similar in case of parallel sentences but in other cases where $y_{i}$ and $y_{j}$ where $i\neq j$ are not parallel sentences it adjust the model to separate them in the vectorial space as far as possible.
 
-#### ERNIE-M
+## ERNIE-M
 #### What specific strategies does ERNIE-M use to achieve improved cross-lingual representation and semantic alignment?
-#### How does ERNIE-M incorporate knowledge into its training process, and why is this advantageous for cross-lingual tasks?
-#### Explain how Cross-lingual Paraphrase Classification (CLPC) is used in ERNIE-M to refine the model’s ability to detect paraphrases across languages.
+
+ERNIE-M is a particular model that combines bot parallel and monolingual data to achieve state-of-the-art results. For this model it was known that parallel corpora were always limited and relatively small when we compare it to monolingual corpora.
+
+To face this problem ERNIE-M proposes two new pre-training tasks which are Cross-Attention Masked Language Modeling (CAMLM) and Back-Translation Masked Language Modeling (BTMLM).
+
+These new tasks allow to the model to generates pseudo-parallel sentences with the large momolingual corpora to combine it with the parallel corpora for model pre-training to improve the alignment of cross-lingual representations.
+
+#### What CAMLM is and how it benefits ERNIE-M?
+
+Cross-attention Masked Language Model  is a pre-training task designed to learn cross-lingual sentence representations using parallel corpora. It builds on the Translation Language Modeling (TLM) framework but introduces a key restriction: when predicting a masked token in one language (e.g., $x$), the model can only attend to the context in the opposite language sentence (e.g., $y$), and vice versa. This forces the model to rely on cross-lingual information, ensuring that the embeddings capture relationships between languages rather than overfitting to monolingual contexts. By prohibiting masked tokens from accessing the context of the same sentence, CAMLM encourages the model to better learn the alignment between source and target language embeddings.
+
+The loss function for CAMLM, as depicted in the image, is defined as:
+$$
+\mathcal{L}_{\text{CAMLAM}} = -\frac{1}{|M_x|} \sum_{i \in M_x} \log P(x_i | y_{M_y}) - \frac{1}{|M_y|} \sum_{i \in M_y} \log P(y_i | x_{M_x}),
+$$
+where $M_x$ and $M_y$ represent the sets of masked positions in the source sentence $x$ and target sentence $y$, respectively. $x_{M_x}$ and $y_{M_y}$ denote the masked versions of the sentences. The first term ensures that masked tokens in $x$ are predicted based on the context from $y$, and the second term does the reverse, predicting masked tokens in $y$ based on $x$.
+
+The next Figure illustrates this process, showing how masked tokens (e.g., $h2$ in $x$ and $h6$ in $y$) use cross-attention to leverage information exclusively from the opposite sentence during training.
+
+![img](../../img/ernie_m_01.jpg)
+
+For **ERNIE-M**, CAMLM offers benefits by enhancing its cross-lingual transfer capabilities. Since the task forces tokens in one language to be predicted based only on context from the other language, the model learns more robust language-agnostic representations. This improves its ability to handle tasks like translation retrieval, multilingual classification, and cross-lingual search, where understanding relationships between different languages is critical. Additionally, the cross-attention mechanism in CAMLM refines ERNIE-M’s ability to leverage bilingual contexts, resulting in more accurate and semantically meaningful embeddings across diverse languages.
+
+
+#### What BTMLM is and how it benefits ERNIE-M?
+
+Back Translation Masked Language Modeling (BTMLM) is a pre-training task that leverages back-translation to create pseudo-parallel sentences, enabling cross-lingual representation learning even in the absence of true parallel corpora. The process consists of two steps, as shown in Figure 4.5. In the first step, a pre-trained CAMLM model generates pseudo-parallel sentences from a given monolingual corpus by predicting tokens in the target language. In the second step, the original monolingual sentence and the generated pseudo-parallel sentence are combined, with the model tasked to predict masked tokens in both sentences.
+
+For example, consider an English monolingual sentence, "The cat sleeps." In the first step, CAMLM generates a pseudo-parallel translation in French, such as "Le chat dort." Masked tokens `[MASK]` are added to these pseudo-parallel sentences to mark tokens to be predicted. In the second step, the original English sentence and its pseudo-parallel French counterpart are combined. Masks are placed in both sentences (e.g., "The [MASK] sleeps" and "Le [MASK] dort"), and the model is trained to predict the masked tokens based on the cross-lingual context.
+
+The next figure illustrates this process, showing how pseudo-tokens (e.g., $h5$ and $h6$) are generated and then used to train the CAMLM model further. By iteratively creating and leveraging pseudo-parallel data, BTMLM significantly enhances the cross-lingual capabilities of pre-trained models like ERNIE-M.
+
+![img](../../img/ernie_m_02.png)
 
 ## HITCL
 #### What is HITCL, and how does it handle high-level representation alignment across languages?
