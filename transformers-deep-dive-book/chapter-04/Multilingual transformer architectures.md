@@ -389,8 +389,23 @@ The next figure illustrates this process, showing how pseudo-tokens (e.g., $h5$ 
 
 ## HITCL
 #### What is HITCL, and how does it handle high-level representation alignment across languages?
+
+Hierarchical Contrastive Learning (HICTL) is a cross-lingual pre-training task that leverages contrastive learning techniques to align both sentence-level and word-level representations across multiple languages. It employs the InfoNCE loss function, which ensures that embeddings from parallel data (e.g., translations) in different languages are closely aligned in the shared representation space, while non-parallel data is pushed apart. This hierarchical approach ensures that both global (sentence-level) and local (word-level) linguistic features are aligned.
+
+InfoNCE loss function:
+$$
+\mathcal{L}_{HICTL}^{(x_i, y_i)} = - \log \frac{\exp\left(f(x_i)^\top f(y_i)\right)}{\sum_{j=1}^N \exp\left(f(x_i)^\top f(y_j)\right)}
+$$
+
+For high-level representation alignment, such as sentence-level, HICTL uses a contrastive loss framework similar to XLCO but improves negative sampling. It constructs "hard negative" samples by closely analyzing the relationships between sentence embeddings. The used hard negatives samples are smoothed linear interpolations between sentences to ensuring robust alignment of semantically similar sentence representations across languages.
+
+At the word-level, HICTL further aligns individual word representations by leveraging the [CLS] token, which serves as an anchor for the parallel sentence pair. Words from the same context (e.g., translations) are treated as positive samples, while others are considered negatives. HICTL optimizes this process by sampling negatives that are contextually closer, avoiding inefficiencies of sampling from the entire vocabulary. This hierarchical framework efficiently bridges sentence-level semantics and word-level nuances to enhance multilingual understanding.
+
 #### How does HITCL utilize contrastive learning for better cross-lingual understanding, and what challenges does this approach address?
-#### In what ways does Cross-lingual Word Recovery (CLWR) assist HITCL in learning more precise word-level alignments?
+
+HICTL utilizes contrastive learning by aligning sentence-level and word-level representations across languages in a hierarchical manner. At the sentence level, it employs InfoNCE-based loss to bring parallel sentence embeddings (translations) closer together while separating non-parallel ones. To enhance effectiveness, it generates "hard negatives," which are semantically close but not identical to the positive pairs. This ensures the model learns robust, language-agnostic sentence embeddings by focusing on subtle distinctions between truly parallel and non-parallel data.
+
+At the word level, HICTL uses the `[CLS]` token representation of a parallel sentence pair as an anchor to compute contrastive loss between individual words. Words within the sentence pair are treated as positives, while others in the vocabulary are negatives. By selecting contextually relevant negative samples instead of random ones, HICTL mitigates the inefficiency and noise associated with large vocabularies. This hierarchical approach addresses challenges like capturing both high-level semantics (sentence meaning) and fine-grained lexical nuances, improving cross-lingual understanding in scenarios where both global and local alignment are critical.
 
 # Dual-Encoder Multilingual NLU
 
