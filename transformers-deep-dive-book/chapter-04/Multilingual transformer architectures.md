@@ -412,11 +412,96 @@ At the word level, HICTL uses the `[CLS]` token representation of a parallel sen
 ## LaBSE
 #### How does LaBSE differ from single-encoder models in terms of sentence embedding generation and cross-lingual retrieval?
 
-#### What challenges does LaBSE face when aligning multilingual embeddings, and how are they mitigated in its architecture?
+LaBSE (**Language-agnostic BERT Sentence Embedding**) is a dual-encoder model designed for multilingual sentence embedding and cross-lingual retrieval. Unlike single-encoder models, which process concatenated source and target sentences jointly, LaBSE employs two separate encoders to independently map the **source sentence** ($x$) and **target sentence** ($y$) into a shared multilingual embedding space. This design allows embeddings to be precomputed, making cross-lingual retrieval highly efficient.
+
+The model uses a **translation ranking loss** with in-batch negative sampling to align embeddings of true translations (positive pairs) closely, while pushing apart embeddings of unrelated sentences (negative pairs). Additionally, LaBSE incorporates **additive margin softmax**, which pushes the model to produce more accurate representations the separation between positive and negative pairs. Below, I explain its loss function step by step.
+---
+
+#### What are the key benefits of use a dual encoder architecture instead of an architecture of one encoder architecture?
+
+Using a dual-encoder architecture provides several advantages over a single-encoder architecture, particularly in tasks involving multilingual and cross-lingual sentence embeddings:
+
+1. **Efficiency in Retrieval:** Dual encoders allow precomputation of embeddings for both source and target sentences. In contrast, single-encoder models require concatenating sentence pairs and processing them jointly during inference, making dual encoders significantly faster for large-scale retrieval tasks.
+
+2. **Scalability:** Since embeddings can be precomputed independently, dual encoders are more scalable to large datasets and multilingual scenarios. This independence avoids repeated encoding of the same sentence when used with multiple queries.
+
+3. **Parallelism:** Dual encoders support independent encoding of source and target sentences, which can be computed in parallel. This contrasts with single-encoder models that must process concatenated inputs sequentially.
+
+4. **Flexibility in Alignment:** By maintaining separate encoders, dual architectures allow better optimization for alignment between languages using techniques like translation ranking loss and additive margin softmax, improving cross-lingual representation learning.
+
+These benefits make dual-encoder architectures particularly effective for multilingual tasks such as parallel sentence mining, cross-lingual information retrieval, and sentence similarity scoring.
+
+#### What challenges does LaBSE face when aligning multilingual embeddings, and how are they mitigated?
+
+LaBSE faces several challenges when aligning multilingual embeddings, which it addresses through specific strategies:
+
+Linguistic Diversity: Differences in syntax, morphology, and word order across languages make alignment difficult. LaBSE mitigates this by using a dual-encoder architecture that processes sentences independently, aligning them in a shared multilingual space using a translation ranking loss.
+Handling False Positives: Semantically similar but non-parallel sentences (e.g., "The cat sleeps" vs. "The dog runs") can lead to false positives. LaBSE counters this with additive margin softmax, which enforces stricter separation between positive and negative pairs by penalizing true pairs with an additive margin.
+Low-Resource Languages: Limited parallel data for low-resource languages can result in poorly aligned embeddings. LaBSE addresses this with in-batch negative sampling to efficiently utilize existing multilingual data and a bidirectional loss to ensure alignment across both high-resource and low-resource languages.
+These strategies ensure that LaBSE aligns embeddings effectively across diverse languages and resource constraints, making it robust for multilingual and cross-lingual tasks.
 
 #### How does LaBSE utilize the Bidirectional Dual Encoder with Additive Margin Softmax to improve retrieval performance across languages?
 
-### mUSE
+LaBSE uses the Bidirectional Dual Encoder to enhace its representations by having one encoder for each component of the parallel data instead of concatenate the two with a `[SEP]` token like previous reviewed pre-trained models in this chapter.
+
+LaBSE computes the similarity between the source ($x$) and target ($y$) embeddings using a dot product:
+
+$$
+\phi(x, y) = x^T y
+$$
+
+This score measures the alignment of $x$ and $y$ in the shared embedding space. For example, if $x$ is an English sentence and $y$ is its French translation, $\phi(x, y)$ should be high. Conversely, if $y'$ is not a translation of $x$, $\phi(x, y')$ should be low.
+
+To improve discriminative power, LaBSE modifies the scoring function for positive pairs by introducing an **additive margin $m$**:
+
+$$
+\phi'(x_i, y_j) =
+\begin{cases}
+\phi(x_i, y_j) - m, & \text{if } i = j \ (\text{positive pair}) \\
+\phi(x_i, y_j), & \text{if } i \neq j \ (\text{negative pair})
+\end{cases}
+$$
+
+The margin $m$ penalizes the similarity of positive pairs in parallel sentences, requiring their scores to be significantly higher than those of negative pairs to minimize the loss. This increases the decision boundary between positive and negative embeddings.
+
+On the other hand, LaBSE minimizes the negative log-likelihood of the positive pair being the most similar target sentence for a given source sentence. The loss for a batch of $N$ sentence pairs $\{(x_1, y_1), \dots, (x_N, y_N)\}$ is:
+
+$$
+\mathcal{L} = - \frac{1}{N} \sum_{i=1}^N \log \frac{e^{\phi'(x_i, y_i)}}{\sum_{n=1}^N e^{\phi'(x_i, y_n)}}
+$$
+
+In this formulation:
+- There's an **asymmetry** becuase this function just consider the preidiction of $y_i$ based on $x_i like this$ $P(y_i | x_i)$. Later on we'll see that this first loss function will be complemented with another one that considers $P(x_i|y_i)$ as well to removes the asymmetry.
+- The **numerator**, $e^{\phi'(x_i, y_i)}$, represents the similarity score of the true translation pair $(x_i, y_i)$ (with the margin applied).
+- The **denominator**, $\sum_{n=1}^N e^{\phi'(x_i, y_n)}$, sums the similarity scores of all target sentences in the batch. This implements softmax normalization over the target candidates.
+
+The model learns to maximize the numerator (true pair similarity) while minimizing the denominator (confusion with negatives).
+
+But, to ensure robust cross-lingual alignment, LaBSE optimizes a **bidirectional loss**. This involves aligning both:
+1. **Source-to-Target** ($x \to y$):
+   $$
+   \mathcal{L} = - \frac{1}{N} \sum_{i=1}^N \log \frac{e^{\phi'(x_i, y_i)}}{\sum_{n=1}^N e^{\phi'(x_i, y_n)}}
+   $$
+2. **Target-to-Source** ($y \to x$):
+   $$
+   \mathcal{L}' = - \frac{1}{N} \sum_{i=1}^N \log \frac{e^{\phi'(y_i, x_i)}}{\sum_{n=1}^N e^{\phi'(y_i, x_n)}}
+   $$
+
+The final loss combines the two of them in one symmetrical function:
+
+$$
+\tilde{\mathcal{L}} = \mathcal{L} + \mathcal{L}'
+$$
+
+Let's suppose $x$ is an English sentence ("The cat sleeps"), and $y$ is its French translation ("Le chat dort"). The model ensures that their embeddings are closely aligned ($\phi(x, y)$ is high), while unrelated sentences in French, such as "Le chien court" ("The dog runs"), are pushed farther away ($\phi(x, y')$ is low). This enables effective retrieval of translations across languages.
+
+#### What is the progressive stacking approach in LaBSE, and how does the use of fractions like fracL4 and fracL2 improve training efficiency?
+
+The progressive stacking approach used in LaBSE is a training strategy that incrementally increases the depth of the transformer encoder during pretraining. This means the model is trained in stages, starting with fewer layers and gradually expanding to the full number of layers, $L$. In the notation, fracL4 refers to training only $L/4$ (one-fourth) of the total layers, and fracL2 refers to training $L/2$ (half) of the total layers. For example, if the final model has $L = 24$ layers, the training starts with $6$ layers (fracL4), then progresses to $12$ layers (fracL2), and finally trains the complete model with all $24$ layers. At each stage, the parameters from the smaller model are copied and reused to initialize the next, larger model. This method ensures that the knowledge learned by the smaller model helps guide the training of the deeper model.
+
+This staged approach is designed to address both efficiency and stability in training. Starting with fewer layers reduces computational costs in the early stages while ensuring faster convergence. Additionally, training all layers from scratch can be unstable in very deep models, as gradients can vanish or become hard to optimize. By progressively increasing depth, the model learns more effectively in steps, with earlier stages building a strong foundation for later ones. This also stabilizes the optimization process while minimizing training time for deep transformer models like LaBSE.
+
+## mUSE
 #### Explain how mUSE employs dual-encoder architecture to handle cross-lingual semantic similarity tasks.
 
 #### What makes mUSE suitable for tasks like semantic search and cross-lingual question-answering compared to other multilingual models?
