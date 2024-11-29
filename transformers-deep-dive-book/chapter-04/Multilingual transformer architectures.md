@@ -510,6 +510,10 @@ These embedings are the product of a multitask dual-encoder pre-training with th
 
 > *"The training tasks include: a multifeature question-answer prediction task,4 a translation ranking task, and a natural language inference (NLI) task. Additional task specific hidden layers for the question-answering and NLI tasks are added after the shared encoder to provide representational specialization for each type of task."*
 
+<div align="center">
+    <img src="../../img/mUSE_01.jpg" alt="img">
+</div>
+
 The models after this training achieve competitive metrics for retrieving tasks such as Semantic Retrieval (SR), translation pair bitext retrieval (BR) and retrieval question answering (ReQA).
 
 This dual-encoder pre-training architctire shares the encoder across all the downstream tasks to make a unique robust encoder and it uses data from 16 languages but those with less data were enriched by using Google's translation to that languages based on the English corpora.
