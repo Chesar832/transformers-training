@@ -516,7 +516,7 @@ These embedings are the product of a multitask dual-encoder pre-training with th
 
 The models after this training achieve competitive metrics for retrieving tasks such as Semantic Retrieval (SR), translation pair bitext retrieval (BR) and retrieval question answering (ReQA).
 
-This dual-encoder pre-training architctire shares the encoder across all the downstream tasks to make a unique robust encoder and it uses data from 16 languages but those with less data were enriched by using Google's translation to that languages based on the English corpora.
+This dual-encoder pre-training architecture shares the encoder across all the downstream tasks to make a unique robust encoder and it uses data from 16 languages but those with less data were enriched by using Google's translation to that languages based on the English corpora.
 
 Finally, these models are thought to be used for retrieval tasks and that's why they achieve state-of-the-art results in tasks that requires embeddings that represent the semantic meaning accurately.
 
