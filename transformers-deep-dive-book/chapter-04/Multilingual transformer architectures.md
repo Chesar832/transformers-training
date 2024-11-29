@@ -504,9 +504,21 @@ This staged approach is designed to address both efficiency and stability in tra
 ## mUSE
 #### Explain how mUSE employs dual-encoder architecture to handle cross-lingual semantic similarity tasks.
 
+The Multilingual Universsal Sentence Encoders (mUSE) handle cross-lingual semantic similarity tasks by using its sentence level embeddings that captures the meaning of the sentences in 16 languages.
+
+These embedings are the product of a multitask dual-encoder pre-training which improves the performance of the model for retrieving tasks such as Semantic Retrieval (SR), translation pair bitext retrieval (BR) and retrieval question answering (ReQA).
+
+This dual-encoder pre-training architctire shares the encoder across all the downstream tasks to make a unique robust encoder and it uses data from 16 languages but those with less data were enriched by using Google's translation to that languages based on the English corpora.
+
+Finally, these models are thought to be used for retrieval tasks and that's why they achieve state-of-the-art results in tasks that requires embeddings that represent the semantic meaning accurately.
+
+*Note:* The original [paper of mUSE](../../papers/mUSE%20for%20retrieval.pdf) talk about 2 model, one with the transformer architecture and other which instead of using the dual-encoder uses a CNN network which performs a similar encoding in the sense of convolutions combined with max pooling to achieve fixed length sentences.
+
 #### What makes mUSE suitable for tasks like semantic search and cross-lingual question-answering compared to other multilingual models?
 
-#### How does mUSE leverage Sequence-to-Sequence LM (Seq2SeqLM) for tasks that involve generating responses in different languages?
+First, the fact that mUSE us the same encoder to encode all the input sentences makes it a strong option because that means that our representations of our multilingual data share the same vectorial space. 
+
+Second, it's a good option for QA answering because these models captures the meaning of the sentences unlike more classic models like RoBERTa which performs the semantic similarity with its $CLS$ token which is interpreted to the attention to all tokens in the sentence what is also interpreted as the context of the sentence. On the other hand, mUSE models computes representations for each token and average these represetantions at the end of the network to capture the meaning of the input sentence.
 
 ## Multilingual NLG
 #### What are the primary differences between multilingual natural language generation (NLG) and natural language understanding (NLU) models?
