@@ -530,6 +530,8 @@ Second, it's a good option for QA answering because these models captures the me
 
 ## Multilingual NLG
 #### What are the primary differences between multilingual natural language generation (NLG) and natural language understanding (NLU) models?
+The primary differences between multilingual natural language generation and natural language understanding model is the use of the whole Transformer architecture which involves the decoder.
+Both of them use the self-attention mechanism and the multi-head attention mechanism, but the NLG models also use the attention of the already generated tokens by the decoder, these tokens are generated from left to right and if the sequence is, for instance, $The dog is barking$ and the masked version of the sequence is $The [MASK] is barking$, the NLU models just use biderectional attention to the tokens $x_The, x_is and x_barking$. But, NLG models also use those tokens and the ordinal generated token by the decoder like just $x_The$ in addition to the self-attention to predict the masked token.
 
 #### How does a multilingual NLG model handle the diversity of languages in terms of grammar, sentence structure, and semantic consistency across generated outputs?
 
