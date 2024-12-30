@@ -174,6 +174,59 @@ The provided **diagram** (Figure 5.3) illustrates the **expansion phase** of the
 - **GLT (4 groups)**: In the final stage, the input is divided into 4 groups, with transformations applied independently to each group. The increased number of groups reduces redundancy and further decreases computational cost.
 - **Out**: Represents the output vector of the transformation.
 
+#### RealFormer
+
+The RealFormer is a Transformer Block modifications which basically introduces residual connections across the multiple multi-head attentions in the Transformer architecture. 
+
+This residual connection is added to each MHA (Multi-Head Attention) and it contains the raw attention logits of the previous layer and it is applied to all attention heads, thi usually is interpreted as the previous Encoder block in the BERT arhitecture, for instance.
+
+Mathematically this raw logits are the result of the dot-product attention scores expressed as $QK^T$ and denotated as $Prev'$. So, this scores will be added to the scaled attention scores, then be passed for a softmax and multipplied by $V$. Then, this computations looks like this:
+
+$$
+ResidualAttn(Q', K', V', Prev') = \text{softmax} \left( \frac{Q'K'^T}{\sqrt{d_k}} + Prev' \right) V'
+$$
+
+The intuition behind the idea of the RealFormer is preserving information from earlier calacultions of the model to improve its representations.
+
+Finally, the RealFormer achieved better reults than the original transformer and it is used in BERT, all without increasing the number of model parameters.
+
+### Adaptative Computation Time
+
+#### Universal Transformers (UT)
+The Universal Transformer (UT) is an evolution of the Transformer architecture designed to address its inefficiencies and limitations by introducing a recurrent mechanism and adaptive computation. Unlike the original Transformer, which processes each token through a fixed number of layers regardless of its complexity, the Universal Transformer refines each token's representation iteratively using a shared Transformer block. This recurrence enables the model to dynamically adapt to the complexity of each token, introducing a **recurrent inductive bias** that allows it to process hierarchical structures and long-term dependencies more effectively.
+
+In the original Transformer, all tokens undergo the same number of transformations, which leads to inefficiencies. Simple tokens, such as articles or punctuation (e.g., "the" or ","), receive more processing than necessary, while complex or ambiguous tokens (e.g., "bank," which can mean "riverbank" or "financial bank") might not receive sufficient refinement. Furthermore, standard Transformers lack the sequential inductive bias inherent to recurrent neural networks (RNNs), which makes them less suited for tasks requiring hierarchical reasoning or iterative refinements, such as language parsing or dependency resolution. The Universal Transformer addresses this by applying the same layer recurrently, allowing tokens to be processed iteratively until their representations are adequately refined.
+
+To further optimize the model, the Universal Transformer incorporates **Adaptive Computation Time (ACT)**, a mechanism that dynamically determines how many computation steps each token requires. ACT enables the model to allocate computational resources based on token complexity, processing simpler tokens for fewer iterations and more complex ones for additional steps. This mechanism introduces a **halting probability** \(p_t\), which determines whether to stop processing a token at step \(t\). The halting probability is computed using a small neural network applied to the token's current representation:
+
+$$
+p_t = \sigma(W h_t + b)
+$$
+
+In this equation:
+- $W$ and $b$ are trainable parameters that determine how the model predicts the halting probability based on the token's current state.
+- $h_t$ is the token's representation at step $t$, refined through self-attention and the recurrent transition function.
+- $\sigma$ is the sigmoid activation function, ensuring $p_t \in [0, 1]$.
+
+At each step, the cumulative halting probability is updated as:
+
+$$
+P_t = \sum_{i=1}^t p_i
+$$
+
+Once $P_t$ reaches or exceeds 1, the token halts further processing. If the cumulative halting probability surpasses 1 during a step, the model only performs the fractional computation required to ensure $P_t = 1$, effectively scaling down the remaining processing. This mechanism allows the model to independently decide for each token when to stop, introducing dynamic computation into the Transformer architecture.
+
+For example, consider two tokens in a sentence: "the" (a simple, frequent word) and "bank" (a context-dependent word with multiple meanings). At the first step, both tokens have their initial representations, and the model computes a halting probability for each:
+- For "the," the halting probability $p_1 = 0.7$, indicating the model is already confident that this token's representation is sufficiently refined. After a second step, $P_2 = 1.0$, and the token halts.
+- For "bank," the halting probability $p_1 = 0.3$, indicating more processing is needed. Additional steps refine its representation, with the cumulative probability reaching $P_3 = 1.0$ after three steps.
+
+This dynamic allocation of computational effort allows the Universal Transformer to focus more resources on complex tokens, improving efficiency and accuracy without wasting computation on simpler ones.
+
+The intuition behind ACT is to let the model "ponder" longer on difficult tokens while skipping unnecessary steps for easier ones. By dynamically balancing computational effort across tokens, ACT enhances both the efficiency and effectiveness of the Universal Transformer, making it particularly well-suited for tasks involving diverse token complexities or hierarchical structures.
+
+In summary, the Universal Transformer combines the **recurrent inductive bias** of RNNs with the parallelization and self-attention mechanisms of Transformers, offering computational universality and improved adaptability. Through the introduction of ACT, the model ensures computational resources are allocated dynamically and efficiently, refining token representations based on their complexity. These innovations make the Universal Transformer a powerful architecture for tasks requiring iterative reasoning and hierarchical understanding, significantly extending the capabilities of the standard Transformer.
+
+
 
 ---
 
