@@ -226,25 +226,25 @@ The intuition behind ACT is to let the model "ponder" longer on difficult tokens
 
 In summary, the Universal Transformer combines the **recurrent inductive bias** of RNNs with the parallelization and self-attention mechanisms of Transformers, offering computational universality and improved adaptability. Through the introduction of ACT, the model ensures computational resources are allocated dynamically and efficiently, refining token representations based on their complexity. These innovations make the Universal Transformer a powerful architecture for tasks requiring iterative reasoning and hierarchical understanding, significantly extending the capabilities of the standard Transformer.
 
+#### Transformer-XL
 
+This Transformer architecture is proposed to face the problem of the fixed-length of the common Transformers architectures which can't learn from tokens that exceeds a that fixed-length window. Transformer XL can learn longer dependencies without interrupting the temporal coherence among segments of text and it solves the *context fragmentation problem* achieving a better performance and evalutaion time in short and long sequences. This problem arises when a model training does not capture or respect the natural boundaries of semantic or syntactic structures in the text and this leads to an inferior performance given that tehre's no information flow across text segments.
 
----
+Researchers inspired by a related work ([Character-Level Language Modeling with Deeper Self-Attention](https://arxiv.org/pdf/1808.04444)) that involved a specific set of loss functions for character-level language modeling that achieves better results in `text8` and `enwik8` benchmarks. Those results were reached through auxiliary losses at intermediate network layers and intermediate sequence positions.
 
-## Transformers with modified multi-head self-attention
+The authors proposed the idea notion of recurrence for deep self-attention networks, whici basically impplies to reuse previous hidden states instead of start from scratch for each segment. The previous hidden states will be stored in memory and the current segment can access to those hidden states through a recurrent connection.
 
+So, with the purpose of reuse previous hidden states, Transformer-XL proposes *relative positional encoding* instead of traditional absolute positional encodings which also keeps the temporality of tokens. In addition, this new encoding generalizes to longer dependencies that the observed lengths in training phase.
 
+The network has the goal to predict a context representation of certain tokens to later be multiplied with word embeddings to get the categorical probability distribution of the next token. 
 
----
+This research work introduce the reuse of previous hidden states to captura longer dependencies and the relative positional encoding which proposes that is's enough (for the network) to know the space or distance between tokens instead of the absoulte position of each one. 
 
-## Modifications for training task efficiency
+Each hidden state depends for a segment $T+1$ on the same hidden state position but of the previous layer of the segment $T+1$ and $T$ where both of them are consecutive segments of text. With this, the model enrich its context to get better predictions and enable de model to use as many previous segments as is needed.
 
+Example of the computation for a determined hidden state:
 
-
-
----
-
-# Transformer submodule changes
-
+![img](../../img/transformer-xl.png)
 
 
 
