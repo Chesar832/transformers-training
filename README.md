@@ -19,5 +19,7 @@
     - Basic Multilingual Transformer, Single-Encoder Multilingual NLU, Dual-Encoder NLU and Multilingual NLG review and explanation of the models [here](transformers-deep-dive-book/chapter-04/Multilingual%20transformer%20architectures.md).
     - Replicated notebook to mUSE for sentiment classification [here](colab-notebooks/mUSE-multilingual-tf-torch-text-classification.ipynb) with data extracted directly from HF(🤗) Datasets library.
     - Notebook for Textual Similarity Detection using Tensorflow Hub (now Kaggle Models Hub), Pytorch Lightning and HF(🤗) [here](colab-notebooks/USE-single-lingual-tf-torch-sentence-similarity-classification.ipynb) with the *Quora Question Pairs* dataset [data here](https://www.kaggle.com/datasets/naseralqaydeh/named-entity-recognition-ner-corpus).
+4. **Transformer Modifications**
+    - Explanation of Trnasformer Modifications that aim to make more efficient the computational cost or to expand model capabilities like Transformer-XL which modifies the way to compute the hidden states and challenge the original positional encoding presented in Attention is All You Need. All those concepts are explained [here](transformers-deep-dive-book/chapter-05/Transformer%20modifications.md).
 ---
 🧠 Made in Chesar's bedroom
