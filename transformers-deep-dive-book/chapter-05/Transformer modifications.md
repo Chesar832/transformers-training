@@ -247,5 +247,11 @@ Example of the computation for a determined hidden state:
 ![img](../../img/transformer-xl.png)
 
 
+...
 
+---
+
+The content that followed the already written explanation provided many references to specific models and explain them too poor, so in order to get a strong foundations of Transformers I decided to skip this section including the practical part because it consists on apply T5 for sentiment analysis which is a downstream task that I already executed multiple times in this repo.
+
+On the other hand, I strognly recommend not to skip this section if the purpose of the reader is to investigate ways to make more computationally efficient architectures for some research or is trying to fully understand specific aspects of Trnasformer like the memory saving or other kinds of attention like Random Attention or Adjacent Attention (both are explained in this section of the book).
 
