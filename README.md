@@ -21,5 +21,7 @@
     - Notebook for Textual Similarity Detection using Tensorflow Hub (now Kaggle Models Hub), Pytorch Lightning and HF(🤗) [here](colab-notebooks/USE-single-lingual-tf-torch-sentence-similarity-classification.ipynb) with the *Quora Question Pairs* dataset [data here](https://www.kaggle.com/datasets/naseralqaydeh/named-entity-recognition-ner-corpus).
 4. **Transformer Modifications**
     - Explanation of Trnasformer Modifications that aim to make more efficient the computational cost or to expand model capabilities like Transformer-XL which modifies the way to compute the hidden states and challenge the original positional encoding presented in Attention is All You Need. All those concepts are explained [here](transformers-deep-dive-book/chapter-05/Transformer%20modifications.md).
+5. **Explainable AI (XAI)**
+    - Notebook to compare some transformers models using Pytorch Lightning and HF(🤗). This notebook is centered in show the application of the Saliency Method from the `captum` library to explain Pytorch models and the notebook is [here](colab-notebooks/Saliency_XAI_BERT_healthcare_topics.ipynb).
 ---
 🧠 Made in Chesar's bedroom
